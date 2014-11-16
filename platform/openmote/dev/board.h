@@ -114,6 +114,22 @@
 #define UART1_RTS_PIN            3
 /** @} */
 /*---------------------------------------------------------------------------*/
+/** \name I2C configuration
+ *
+ * On the OpenMote, the I2C is connected to the
+ * following ports/pins
+ * - SCL:  PB3
+ * - SDA:  PB4
+ *
+ * @{
+ */
+#define I2C_SDA_PORT             GPIO_B_NUM
+#define I2C_SDA_PIN              4
+
+#define I2C_SCL_PORT             GPIO_B_NUM
+#define I2C_SCL_PIN              3
+/** @} */
+/*---------------------------------------------------------------------------*/
 /** \name OpenMote-CC2538 Button configuration
  *
  * Buttons on the OpenMote-CC2538 are connected as follows:
