@@ -43,7 +43,7 @@ check_crc_SHT21(uint8_t data[], uint8_t dataSize, uint8_t chksm)
 uint8_t
 read_SHT21(uint16_t * data, uint8_t regist)
 {
-        uint16_t temp;
+    uint16_t temp;
 	uint8_t dataByte[2];
 	if(regist != SHT21_TEMP_REGISTER && regist != SHT21_HUMI_REGISTER) {
 		return -1;
