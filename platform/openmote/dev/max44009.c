@@ -10,8 +10,10 @@
 
 
 #include <contiki.h>
+#include <math.h>
 #include "max44009.h"
 #include "i2c.h"
+
 
 /** \name Sensor's specific
  * @{
@@ -67,61 +69,21 @@ uint8_t mantissa;
 /*---------------------------------------------------------------------------*/
 int enable_max44009(void)
 {
+    uint8_t i=0;
     uint8_t max44009_address[5] = {MAX44009_INT_ENABLE_ADDR, MAX44009_CONFIG_ADDR, \
                                    MAX44009_THR_HIGH_ADDR, MAX44009_THR_LOW_ADDR, \
                                    MAX44009_THR_TIMER_ADDR};
     uint8_t max44009_value[5];
-    uint8_t status;
 
-    max44009_value[0] = (MAX44009_INT_STATUS_ON);
+    //max44009_value[0] = (MAX44009_INT_STATUS_ON);
+    max44009_value[0] = (MAX44009_INT_STATUS_OFF);
     max44009_value[1] = (MAX44009_DEFAULT_CONFIGURATION);
     max44009_value[2] = (0xFF);
     max44009_value[3] = (0x00);
     max44009_value[4] = (0xFF);
 
     
-    for(uint8_t i=0; i<sizeof(max44009_address); i++)
-    {
-
-        i2c_master_set_slave_address(MAX44009_ADDRESS, I2C_SEND);
-
-        i2c_master_data_put(max44009_address[i]);  // send address 
-        i2c_master_command(I2C_MASTER_CMD_BURST_SEND_START);
-        while(i2c_master_busy())   {}
-        if(I2C_MASTER_ERR_NONE != i2c_master_error() ){
-            return -1;
-        }
-
-        i2c_master_data_put(max44009_value[i]);    // send config data
-        i2c_master_command(I2C_MASTER_CMD_BURST_SEND_STOP);
-        while(i2c_master_busy())   {}
-        if(I2C_MASTER_ERR_NONE != i2c_master_error() ){
-            return -1;
-        }
-    }
-
-    return 0;
-}
-/** @} */
-/*---------------------------------------------------------------------------*/
-int rst_max44009(void)
-{
-    uint8_t max44009_address[5] = {MAX44009_INT_ENABLE_ADDR, MAX44009_CONFIG_ADDR, \
-                                   MAX44009_THR_HIGH_ADDR, MAX44009_THR_LOW_ADDR, \
-                                   MAX44009_THR_TIMER_ADDR};
-    uint8_t max44009_value[5];
-    uint8_t status;
-
-    max44009_value[0] = (MAX44009_INT_STATUS_ON);
-    max44009_value[1] = (MAX44009_DEFAULT_CONFIGURATION);
-    max44009_value[2] = (0x00);
-    max44009_value[3] = (0x03);
-    max44009_value[4] = (0xFF);
-    max44009_value[4] = (0x00);
-    max44009_value[4] = (0xFF);
-
-    
-    for(uint8_t i=0; i<sizeof(max44009_address); i++)
+    for(i=0; i<sizeof(max44009_address); i++)
     {
 
         i2c_master_set_slave_address(MAX44009_SLAVE_ADDRESS, I2C_SEND);
@@ -134,7 +96,49 @@ int rst_max44009(void)
         }
 
         i2c_master_data_put(max44009_value[i]);    // send config data
-        i2c_master_command(I2C_MASTER_CMD_BURST_SEND_STOP);
+        i2c_master_command(I2C_MASTER_CMD_BURST_SEND_FINISH);
+        while(i2c_master_busy())   {}
+        if(I2C_MASTER_ERR_NONE != i2c_master_error() ){
+            return -1;
+        }
+    }
+
+    return 0;
+}
+/** @} */
+/*---------------------------------------------------------------------------*/
+int rst_max44009(void)
+{
+    uint8_t i = 0;
+    uint8_t max44009_address[5] = {MAX44009_INT_ENABLE_ADDR, MAX44009_CONFIG_ADDR, \
+                                   MAX44009_THR_HIGH_ADDR, MAX44009_THR_LOW_ADDR, \
+                                   MAX44009_THR_TIMER_ADDR};
+    uint8_t max44009_value[5];
+
+    //max44009_value[0] = (MAX44009_INT_STATUS_ON);
+    max44009_value[0] = (MAX44009_INT_STATUS_OFF);
+    max44009_value[1] = (MAX44009_DEFAULT_CONFIGURATION);
+    max44009_value[2] = (0x00);
+    max44009_value[3] = (0x03);
+    max44009_value[4] = (0xFF);
+    max44009_value[4] = (0x00);
+    max44009_value[4] = (0xFF);
+
+    
+    for(i=0; i<sizeof(max44009_address); i++)
+    {
+
+        i2c_master_set_slave_address(MAX44009_SLAVE_ADDRESS, I2C_SEND);
+
+        i2c_master_data_put(max44009_address[i]);  // send address 
+        i2c_master_command(I2C_MASTER_CMD_BURST_SEND_START);
+        while(i2c_master_busy())   {}
+        if(I2C_MASTER_ERR_NONE != i2c_master_error() ){
+            return -1;
+        }
+
+        i2c_master_data_put(max44009_value[i]);    // send config data
+        i2c_master_command(I2C_MASTER_CMD_BURST_SEND_FINISH);
         while(i2c_master_busy())   {}
         if(I2C_MASTER_ERR_NONE != i2c_master_error() ){
             return -1;
@@ -148,8 +152,6 @@ int rst_max44009(void)
 
 int readReg(uint8_t addr, uint8_t *data)
 {
-    uint8_t max44009_data[2];
-
     i2c_master_set_slave_address(MAX44009_SLAVE_ADDRESS, I2C_SEND);
     i2c_master_data_put(addr);
     i2c_master_command(I2C_MASTER_CMD_BURST_SEND_START);
@@ -176,7 +178,6 @@ int readLux(void)
     uint8_t regContent[2];
     int stat;
 
-    i2c_master_data_put();
     stat = readReg(MAX44009_LUX_HIGH_ADDR, &regContent[0]);
     if(stat < 0){
         return -1;
@@ -198,8 +199,9 @@ int readLux(void)
 float getLux(void)
 {
     float lux = 0.045;
-    lux *= 2^exponent * mantissa;
+    lux *= pow(2.0, (float)exponent) * (float)mantissa;
 
     return lux;
+    //return exponent;
 }
 /*---------------------------------------------------------------------------*/
