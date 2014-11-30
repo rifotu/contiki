@@ -127,7 +127,7 @@ tcpip_handler(void)
     uip_create_unspecified(&server_conn->ripaddr);
     server_conn->rport = 0;
   }
-  //leds_off(LEDS_RED);
+  leds_off(LEDS_RED);
   return;
 }
 /*---------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ PROCESS_THREAD(humidity_light, ev, data)
     PROCESS_BEGIN();
 
     stat = enable_max44009();
-    if(stat == 0){
+    if(stat != 0){
         leds_on(LEDS_RED);
     }
 
@@ -195,14 +195,14 @@ PROCESS_THREAD(humidity_light, ev, data)
         leds_off(LEDS_GREEN);
 
         printf("light\n");
-        leds_off(LEDS_YELLOW);
+        leds_on(LEDS_YELLOW);
         if(0 == readLux() ){
             lux = getLux();
             snprintf(maxMsg, sizeof(maxMsg), "%d", (uint32_t)lux);
             //snprintf(maxMsg, sizeof(maxMsg), "%10.4f", lux);
             //snprintf(maxMsg, sizeof(maxMsg), "%d", lux);
-            leds_on(LEDS_YELLOW);
         }
+        leds_off(LEDS_YELLOW);
     }
 
     PROCESS_END();
